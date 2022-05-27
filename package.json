@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "nodemon": "^2.0.16",
+    "socket.io": "^4.5.1",
+    "ws": "^8.6.0"
+  },
+  "name": "bouble-server-socket",
+  "version": "1.0.0",
+  "main": "cl_WS_server.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon server_ws.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

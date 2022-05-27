@@ -1,0 +1,1 @@
+[{"EquipID":"goncal","SocketID":"bb-af-9a-6f09"}]
