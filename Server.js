@@ -76,9 +76,8 @@ function sendMessage(ID, messageAsString){
                     wss.clients.forEach(function each(client){
                         console.log(client.id,"\n", element["SocketID"])
                         if(client.id == element["SocketID"]){
-                            client.send(messageAsString)
-                            client.emit(messageAsString)
-                            console.log("envoyer\n");
+                            client.send(messageAsString.toString())
+                            console.log("envoyer !\n");
                             }
                         })
                     }
@@ -97,7 +96,7 @@ wss.on("connection", (ws, req) => {
         Datagrame = JSON.parse(messageAsString);
         RefrechDatBase(Datagrame["IDSender"],ws.id)
         sendMessage(Datagrame["IDDestiner"], messageAsString)
-        if(IpAdd != "::ffff:127.0.0.5"){
+        if(IpAdd != "::ffff:127.0.0.1"){
             console.log("client ip = 10.20.1.X donc client microcontroler \n",/*Datagrame*/)
 
             if(Datagrame["IDDestiner"] == ""){// premier connection depuis le setup; donc láddresde destinati (celui de lápi) est vide !
