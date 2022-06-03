@@ -35,7 +35,7 @@ function InDataBase(ID){
         }
         //console.log("Rien TrouverS\n");
     })
-    console.log("a : ",a,"\tb : ",b);
+    //console.log("a : ",a,"\tb : ",b);
     if(b!=0){return true}else{return false}
 }
 
@@ -71,10 +71,10 @@ function RefrechDatBase(EquipID,SocketID){
 function sendMessage(ID, messageAsString){
     const Database = require("./clients.json")
         Database.forEach(element => {
-            console.log(element["EquipID"],"\t",ID)
+            //console.log(element["EquipID"],"\t",ID)
                 if(element["EquipID"] == ID){
                     wss.clients.forEach(function each(client){
-                        console.log(client.id,"\n", element["SocketID"])
+                       //console.log(client.id,"\n", element["SocketID"])
                         if(client.id == element["SocketID"]){
                             client.send(messageAsString.toString())
                             console.log("envoyer !\n");
@@ -85,6 +85,41 @@ function sendMessage(ID, messageAsString){
                 });
 }
 
+
+function BodyWork(id, IpAdd, messageAsString){
+    if ( messageAsString.toString().length > 70) { // verification du schema de base contenant id destination
+        Datagrame = JSON.parse(messageAsString);   
+        if(Datagrame["IDSender"].length === 22){ //Verification du destinataire du destinataire
+            if(IpAdd != "::ffff:127.0.0.1"){ // Vennant du reseaux externe 10.20.1.X
+                if(!InDataBase(Datagrame["IDSender"])){
+                    AddDataBase(Datagrame["IDSender"],id)
+                    console.log("enregistrement dans la base de donne !")
+                    sendMessage("Rp:xj:pM:R3:87:Ts@9613", messageAsString)
+                    console.log("Envoye a l'api !")
+                }else{
+                    RefrechDatBase(Datagrame["IDSender"],id)
+                    console.log("Mise a jour de la base de donne !")
+                    sendMessage("Rp:xj:pM:R3:87:Ts@9613", messageAsString)
+                    console.log("Envoye a l'api !")
+                }
+            }else{// mesage de lápi vers micro
+                RefrechDatBase("Rp:xj:pM:R3:87:Ts@9613",id)
+                console.log("Mise a jour de Id du serveur!")
+                if(Datagrame["IDDestiner"].length === 22){
+                    sendMessage(Datagrame["IDDestiner"], messageAsString)
+                    console.log("Envoye a ", Datagrame["IDDestiner"])
+                }else{// Destinataire incorrecte
+                    console.log("Erruer : Destinataire incorrecte")
+                }
+            }
+        }else{//Sender ou Destinataire incorrecte
+            console.log("Erruer : Sender ou Destinataire incorrecte")
+        }
+    }else{// Si le text est vide ou quíl n'y est pas acces de chars
+        console.log("Erruer : Message vide")
+    }
+}
+
 //let socket = new Map();
 
 wss.on("connection", (ws, req) => {
@@ -92,15 +127,18 @@ wss.on("connection", (ws, req) => {
     ws.id = wss.uuidv4(); // genere id de la connnection
     console.log("\n\t",ws.id,"\t",IpAdd)
     //sendMessage(Datagrame["IDDestiner"], messageAsString)
-    ws.on("message", (messageAsString)=> {
-        Datagrame = JSON.parse(messageAsString);
-        RefrechDatBase(Datagrame["IDSender"],ws.id)
-        sendMessage(Datagrame["IDDestiner"], messageAsString)
-        if(IpAdd != "::ffff:127.0.0.1"){
-            console.log("client ip = 10.20.1.X donc client microcontroler \n",/*Datagrame*/)
+    ws.on("message", (messageAsString) => {
+        BodyWork(ws.id, IpAdd, messageAsString)
+    })
+})
+
+
+/*
+if(IpAdd != "::ffff:127.0.0.1"){
+            //console.log("client ip = 10.20.1.X donc client microcontroler \n")
 
             if(Datagrame["IDDestiner"] == ""){// premier connection depuis le setup; donc láddresde destinati (celui de lápi) est vide !
-                console.log("Premier connection \n "/*,Datagrame["IDSender"]*/)
+               // console.log("Premier connection \n ",Datagrame["IDSender"])
                 if(!InDataBase(Datagrame["IDSender"])){
                     console.log("enregistrement dans la base de donne !")
                     AddDataBase(Datagrame["IDSender"],ws.id)
@@ -120,4 +158,10 @@ wss.on("connection", (ws, req) => {
     }
     })
 
-})
+    Datagrame = JSON.parse(messageAsString);
+        console.log(messageAsString.toString().length)
+        console.log(Datagrame["IDSender"].toString().length)
+        console.log(Datagrame["IDSender"].toString())
+        //RefrechDatBase(Datagrame["IDSender"],ws.id)
+        //sendMessage(Datagrame["IDDestiner"], messageAsString)
+*/
