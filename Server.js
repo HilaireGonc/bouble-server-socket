@@ -1,6 +1,7 @@
 const fs = require("fs");
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8000 });
+// ws://127.0.0.1:5000/device/communication/ route a utiliser pour cntacter l'api
 
 wss.uuidv4 = function () {
     return 'xxx-yx-yx-xxxx'.replace(/[xy]/g, function(c) {
@@ -89,12 +90,12 @@ function sendMessage(ID, messageAsString){
 function BodyWork(id, IpAdd, messageAsString){
     if ( messageAsString.toString().length > 70) { // verification du schema de base contenant id destination
         Datagrame = JSON.parse(messageAsString);   
-        if(Datagrame["IDSender"].length === 22){ //Verification du destinataire du destinataire
+        if(Datagrame["IDSender"].length === 13){ //Verification du destinataire du destinataire
             if(IpAdd != "::ffff:127.0.0.1"){ // Vennant du reseaux externe 10.20.1.X
                 if(!InDataBase(Datagrame["IDSender"])){
                     AddDataBase(Datagrame["IDSender"],id)
                     console.log("enregistrement dans la base de donne !")
-                    sendMessage("Rp:xj:pM:R3:87:Ts@9613", messageAsString)
+                    sendMessage("R3:87:Ts@9613", messageAsString) // gere correctement lénvoie a lÁpi
                     console.log("Envoye a l'api !")
                 }else{
                     RefrechDatBase(Datagrame["IDSender"],id)
@@ -103,9 +104,9 @@ function BodyWork(id, IpAdd, messageAsString){
                     console.log("Envoye a l'api !")
                 }
             }else{// mesage de lápi vers micro
-                RefrechDatBase("Rp:xj:pM:R3:87:Ts@9613",id)
+                RefrechDatBase("R3:87:Ts@9613",id)// gere correctement lénvoie a lÁpi
                 console.log("Mise a jour de Id du serveur!")
-                if(Datagrame["IDDestiner"].length === 22){
+                if(Datagrame["IDDestiner"].length === 13){
                     sendMessage(Datagrame["IDDestiner"], messageAsString)
                     console.log("Envoye a ", Datagrame["IDDestiner"])
                 }else{// Destinataire incorrecte
@@ -130,7 +131,12 @@ wss.on("connection", (ws, req) => {
     ws.on("message", (messageAsString) => {
         BodyWork(ws.id, IpAdd, messageAsString)
     })
+
+    ws.on("disconnect", () => { // informer lápi de la deconnection de léquipement 
+
+    })
 })
+
 
 
 /*
